@@ -1,0 +1,13 @@
+checks:
+  buy_tax: 
+    threshold: 15%
+    severity: critical
+  sell_tax:
+    threshold: 20%
+    severity: critical
+  liquidity_lock:
+    min_days: 30
+    severity: high
+  owner_balance:
+    max_percent: 5%
+    severity: medium
