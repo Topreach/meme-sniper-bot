@@ -1,0 +1,12 @@
+wallets:
+  sniper_wallet:
+    address: "0xYourSniperWalletAddress"
+    private_key_env: "SNIPER_PK"
+    allocation: 70%  # Of total capital
+  reserve_wallet:
+    address: "0xYourReserveWalletAddress"
+    private_key_env: "RESERVE_PK"
+    allocation: 30%
+
+max_trade_eth: 0.5  # ETH per trade
+min_profit_threshold: 2.0  # % ROI to trigger trade
