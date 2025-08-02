@@ -2,51 +2,524 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meme Sniper Dashboard</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <script src="/js/dashboard.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #0f172a;
+            --darker: #0a0f1f;
+            --dark-card: #1e293b;
+            --light: #f1f5f9;
+            --gray: #64748b;
+            --border: #334155;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 100%);
+            color: var(--light);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--light);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 3px;
+        }
+        
+        .wallet-summary {
+            display: flex;
+            gap: 20px;
+            background: var(--dark-card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .balance, .profit {
+            padding: 15px 25px;
+            border-radius: 10px;
+            min-width: 220px;
+            background: rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .balance:hover, .profit:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .balance span:first-child, .profit span:first-child {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 5px;
+        }
+        
+        .balance span:last-child, .profit span:last-child {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .profit span:last-child {
+            color: var(--success);
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        
+        .live-trades, .profit-chart {
+            background: var(--dark-card);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .profit-chart {
+            grid-column: span 2;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        th {
+            background: rgba(37, 99, 235, 0.15);
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        tr {
+            border-bottom: 1px solid var(--border);
+        }
+        
+        tr:last-child {
+            border-bottom: none;
+        }
+        
+        td {
+            padding: 15px;
+            font-size: 0.95rem;
+        }
+        
+        .positive {
+            color: var(--success);
+        }
+        
+        .negative {
+            color: var(--danger);
+        }
+        
+        .chart-container {
+            height: 350px;
+            margin-top: 20px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--light);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--success);
+        }
+        
+        .status-pending {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--warning);
+        }
+        
+        .token-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .token-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 992px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .profit-chart {
+                grid-column: span 1;
+            }
+            
+            header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .wallet-summary {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .wallet-summary {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .balance, .profit {
+                width: 100%;
+                text-align: center;
+            }
+            
+            .controls {
+                flex-direction: column;
+            }
+        }
+        
+        /* Animation for table rows */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        tbody tr {
+            animation: fadeIn 0.3s ease forwards;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Meme Sniper Dashboard</h1>
+            <h1><i class="fas fa-bolt"></i> Meme Sniper Dashboard</h1>
             <div class="wallet-summary">
                 <div class="balance">
-                    <span>Sniper Wallet:</span>
-                    <span th:text="${wallet.sniperBalance} + ' ETH'">0.00 ETH</span>
+                    <span><i class="fas fa-wallet"></i> Sniper Wallet:</span>
+                    <span>0.854 ETH</span>
                 </div>
                 <div class="balance">
-                    <span>Reserve Wallet:</span>
-                    <span th:text="${wallet.reserveBalance} + ' ETH'">0.00 ETH</span>
+                    <span><i class="fas fa-vault"></i> Reserve Wallet:</span>
+                    <span>2.125 ETH</span>
                 </div>
                 <div class="profit">
-                    <span>Total Profit:</span>
-                    <span th:text="${profit} + ' ETH'">0.00 ETH</span>
+                    <span><i class="fas fa-chart-line"></i> Total Profit:</span>
+                    <span>1.246 ETH</span>
                 </div>
             </div>
         </header>
 
-        <section class="live-trades">
-            <h2>Live Trades</h2>
-            <table id="trades-table">
-                <thead>
-                    <tr>
-                        <th>Time</th>
-                        <th>Token</th>
-                        <th>Amount</th>
-                        <th>Profit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Filled dynamically by JavaScript -->
-                </tbody>
-            </table>
-        </section>
+        <div class="controls">
+            <button class="btn btn-primary"><i class="fas fa-play"></i> Start Sniper</button>
+            <button class="btn btn-outline"><i class="fas fa-cog"></i> Settings</button>
+            <button class="btn btn-outline"><i class="fas fa-sync"></i> Refresh Data</button>
+        </div>
 
-        <section class="profit-chart">
-            <h2>Profit History (7 Days)</h2>
-            <canvas id="profitChart" width="800" height="400"></canvas>
-        </section>
+        <div class="dashboard-grid">
+            <section class="live-trades">
+                <h2><i class="fas fa-exchange-alt"></i> Live Trades</h2>
+                <table id="trades-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Token</th>
+                            <th>Amount</th>
+                            <th>Profit</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>12:45:23</td>
+                            <td class="token-info">
+                                <div class="token-icon">PEPE</div>
+                                <span>PepeCoin</span>
+                            </td>
+                            <td>0.25 ETH</td>
+                            <td class="positive">+0.124 ETH</td>
+                            <td><span class="status-badge status-active">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>12:32:11</td>
+                            <td class="token-info">
+                                <div class="token-icon">DOGE</div>
+                                <span>DogeCoin</span>
+                            </td>
+                            <td>0.18 ETH</td>
+                            <td class="positive">+0.082 ETH</td>
+                            <td><span class="status-badge status-active">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>12:15:47</td>
+                            <td class="token-info">
+                                <div class="token-icon">SHIB</div>
+                                <span>Shiba Inu</span>
+                            </td>
+                            <td>0.35 ETH</td>
+                            <td class="negative">-0.041 ETH</td>
+                            <td><span class="status-badge status-active">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>12:05:12</td>
+                            <td class="token-info">
+                                <div class="token-icon">FLOKI</div>
+                                <span>Floki Inu</span>
+                            </td>
+                            <td>0.42 ETH</td>
+                            <td class="positive">+0.215 ETH</td>
+                            <td><span class="status-badge status-active">Completed</span></td>
+                        </tr>
+                        <tr>
+                            <td>11:58:36</td>
+                            <td class="token-info">
+                                <div class="token-icon">BONK</div>
+                                <span>Bonk</span>
+                            </td>
+                            <td>0.15 ETH</td>
+                            <td class="positive">+0.068 ETH</td>
+                            <td><span class="status-badge status-pending">Processing</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="live-trades">
+                <h2><i class="fas fa-fire"></i> Active Snipes</h2>
+                <table id="trades-table">
+                    <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>Target Price</th>
+                            <th>Amount</th>
+                            <th>Time Left</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="token-info">
+                                <div class="token-icon">WIF</div>
+                                <span>Dogwifhat</span>
+                            </td>
+                            <td>0.000042 ETH</td>
+                            <td>0.30 ETH</td>
+                            <td>2:14</td>
+                            <td><span class="status-badge status-pending">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td class="token-info">
+                                <div class="token-icon">MEME</div>
+                                <span>Memecoin</span>
+                            </td>
+                            <td>0.000078 ETH</td>
+                            <td>0.25 ETH</td>
+                            <td>5:32</td>
+                            <td><span class="status-badge status-pending">Active</span></td>
+                        </tr>
+                        <tr>
+                            <td class="token-info">
+                                <div class="token-icon">TOSHI</div>
+                                <span>Toshi</span>
+                            </td>
+                            <td>0.000015 ETH</td>
+                            <td>0.40 ETH</td>
+                            <td>8:17</td>
+                            <td><span class="status-badge status-pending">Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="profit-chart">
+                <h2><i class="fas fa-chart-area"></i> Profit History (7 Days)</h2>
+                <div class="chart-container">
+                    <canvas id="profitChart"></canvas>
+                </div>
+            </section>
+        </div>
     </div>
+
+    <script>
+        // Initialize the profit chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('profitChart').getContext('2d');
+            
+            // Sample data
+            const labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const profitData = [0.45, 0.62, 0.28, 0.91, 1.24, 0.76, 1.05];
+            
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Profit (ETH)',
+                        data: profitData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#10b981',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#f1f5f9',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#94a3b8',
+                                callback: function(value) {
+                                    return value + ' ETH';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: '#94a3b8'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Simulate live updates to the trades table
+            setInterval(() => {
+                const tableBody = document.querySelector('#trades-table tbody');
+                if (tableBody.children.length > 0) {
+                    const firstRow = tableBody.children[0];
+                    firstRow.style.animation = 'none';
+                    setTimeout(() => {
+                        tableBody.removeChild(firstRow);
+                    }, 100);
+                }
+            }, 8000);
+        });
+    </script>
 </body>
 </html>
