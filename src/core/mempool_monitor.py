@@ -27,11 +27,21 @@ class MempoolMonitor:
         return None
 
     def _process_lp_creation(self, tx, decoded):
+    # Handle L2-specific LP creation patterns
+    if settings.IS_L2:
+        if settings.L2_NETWORK == 'arbitrum':
+            token_addr = decoded['params']['token']
+        elif settings.L2_NETWORK == 'optimism':
+            token_addr = decoded['params']['tokenA']  # Might be different
+        else:
+            token_addr = decoded['params']['token']
+    else:
         token_addr = decoded['params']['token']
-        return {
-            'tx_hash': tx.hash.hex(),
-            'token': token_addr,
-            'amount_eth': decoded['params']['amountETHDesired'],
-            'block_number': tx.blockNumber,
-            'origin': tx['from']
-        }
+    
+    return {
+        'tx_hash': tx.hash.hex(),
+        'token': token_addr,
+        'amount_eth': decoded['params']['amountETHDesired'],
+        'block_number': tx.blockNumber,
+        'origin': tx['from']
+    }
