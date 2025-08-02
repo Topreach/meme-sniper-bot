@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Meme Sniper Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/dashboard.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Meme Sniper Dashboard</h1>
+            <div class="wallet-summary">
+                <div class="balance">
+                    <span>Sniper Wallet:</span>
+                    <span th:text="${wallet.sniperBalance} + ' ETH'">0.00 ETH</span>
+                </div>
+                <div class="balance">
+                    <span>Reserve Wallet:</span>
+                    <span th:text="${wallet.reserveBalance} + ' ETH'">0.00 ETH</span>
+                </div>
+                <div class="profit">
+                    <span>Total Profit:</span>
+                    <span th:text="${profit} + ' ETH'">0.00 ETH</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="live-trades">
+            <h2>Live Trades</h2>
+            <table id="trades-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Token</th>
+                        <th>Amount</th>
+                        <th>Profit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Filled dynamically by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+        <section class="profit-chart">
+            <h2>Profit History (7 Days)</h2>
+            <canvas id="profitChart" width="800" height="400"></canvas>
+        </section>
+    </div>
+</body>
+</html>
